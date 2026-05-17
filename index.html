@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MMA Career Universe Ultimate</title>
+
+<style>
+
+body{
+margin:0;
+background:#0b0b0b;
+font-family:Arial,sans-serif;
+color:white;
+text-align:center;
+}
+
+.app{
+max-width:430px;
+margin:auto;
+padding:10px;
+}
+
+.card{
+background:#181818;
+border-radius:18px;
+padding:14px;
+margin:12px 0;
+box-shadow:0 0 12px #000;
+}
+
+h1{
+color:gold;
+}
+
+button,input,select{
+padding:11px;
+margin:5px;
+border:none;
+border-radius:10px;
+font-weight:bold;
+}
+
+button{
+background:gold;
+}
+
+.stats{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+}
+
+.stat{
+background:#292929;
+padding:10px;
+border-radius:12px;
+}
+
+.bar{
+height:18px;
+background:#444;
+border-radius:10px;
+overflow:hidden;
+margin:8px 0;
+}
+
+.fill{
+height:100%;
+width:100%;
+background:limegreen;
+transition:.25s;
+}
+
+.energyFill{
+background:#00cfff;
+}
+
+.popFill{
+background:orange;
+}
+
+#fightScreen,#pressBox,#escapeBox{
+display:none;
+}
+
+.arena{
+position:relative;
+height:280px;
+background:linear-gradient(#222,#111);
+border-radius:20px;
+overflow:hidden;
+margin-top:10px;
+}
+
+.floor{
+position:absolute;
+bottom:0;
+height:70px;
+width:100%;
+background:#333;
+}
+
+.fighter{
+position:absolute;
+bottom:70px;
+width:90px;
+height:160px;
+transition:.18s;
+}
+
+.body{
+position:absolute;
+bottom:0;
+width:90px;
+height:120px;
+background:#c28b5c;
+border-radius:40px 40px 18px 18px;
+}
+
+.body:before{
+content:"";
+position:absolute;
+top:-40px;
+left:24px;
+width:40px;
+height:40px;
+background:#f1c27d;
+border-radius:50%;
+}
+
+.shorts{
+position:absolute;
+bottom:8px;
+left:14px;
+width:60px;
+height:28px;
+border-radius:8px;
+background:red;
+}
+
+.hitAnim{
+transform:translateX(30px) rotate(4deg);
+}
+
+.kickAnim{
+transform:translateY(-15px) rotate(12deg);
+}
+
+.takedownAnim{
+transform:translateX(40px) rotate(-14deg);
+}
+
+.submissionAnim{
+transform:scale(.8) rotate(-20deg);
+}
+
+.enemyHit{
+animation:enemyShake .22s;
+}
+
+@keyframes enemyShake{
+0%{transform:translateX(0)}
+25%{transform:translateX(-8px)}
+50%{transform:translateX(8px)}
+75%{transform:translateX(-6px)}
+100%{transform:translateX(0)}
+}
+
+#log{
+background:black;
+border-radius:12px;
+padding:10px;
+height:220px;
+overflow-y:auto;
+font-size:13px;
+text-align:left;
+}
+
+.gold{
+color:gold;
+font-weight:bold;
+}
+
+.redText{
+color:#ff4444;
+font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<h1>MMA Career Universe Ultimate</h1>
+
+<div class="card" id="creator">
+
+<h2>Создай бойца</h2>
+
+<input id="fighterName" value="Мой Боец">
+
+<select id="style">
+<option value="striker">Ударник</option>
+<option value="wrestler">Борец</option>
+<option value="balanced">Универсал</option>
+</select>
+
+<select id="weight">
+<option value="lightweight">Лёгкий вес</option>
+<option value="middleweight">Средний вес</option>
+<option value="heavyweight">Тяжёлый вес</option>
+</select>
+
+<select id="shorts">
+<option value="red">Красные шорты</option>
+<option value="blue">Синие шорты</option>
+<option value="black">Чёрные шорты</option>
+<option value="gold">Золотые шорты</option>
+</select>
+
+<button onclick="createPlayer()">
+Начать карьеру
+</button>
+
+</div>
+
+<div class="card">
+
+<h2 id="playerName">Боец</h2>
+
+<div id="status"></div>
+
+<div class="stats">
+
+<div class="stat">Рейтинг<br><b id="rating">50</b></div>
+<div class="stat">Деньги<br><b id="money">1000</b>$</div>
+<div class="stat">Фанаты<br><b id="fans">0</b></div>
+<div class="stat">Стрик<br><b id="streak">0</b></div>
+<div class="stat">Возраст<br><b id="age">22</b></div>
+<div class="stat">Рейтинг UFC<br><b id="ranking">15</b></div>
+<div class="stat">Победы<br><b id="wins">0</b></div>
+<div class="stat">Поражения<br><b id="losses">0</b></div>
+<div class="stat">Сила<br><b id="power">10</b></div>
+<div class="stat">Грэпплинг<br><b id="grappling">10</b></div>
+<div class="stat">Защита<br><b id="defense">10</b></div>
+<div class="stat">Энергия<br><b id="energy">100</b></div>
+
+</div>
+
+<div class="bar">
+<div id="popularityBar" class="fill popFill"></div>
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Контракт и карьера</h2>
+
+<button onclick="signContract()">
+📄 Контракт
+</button>
+
+<button onclick="sponsorDeal()">
+💰 Спонсор
+</button>
+
+<button onclick="ppvEvent()">
+📺 PPV
+</button>
+
+<button onclick="recoverEnergy()">
+⚡ Восстановить энергию
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Тренировочный лагерь</h2>
+
+<button onclick="chooseCoach('boxing')">
+🥊 Бокс
+</button>
+
+<button onclick="chooseCoach('wrestling')">
+🤼 Борьба
+</button>
+
+<button onclick="chooseCoach('cardio')">
+🏃 Кардио
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Тренировки</h2>
+
+<button onclick="train('power')">
+🥊 Сила
+</button>
+
+<button onclick="train('grappling')">
+🤼 Грэпплинг
+</button>
+
+<button onclick="train('defense')">
+🛡️ Защита
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Весовая категория</h2>
+
+<button onclick="changeWeight('lightweight')">
+Лёгкий вес
+</button>
+
+<button onclick="changeWeight('middleweight')">
+Средний вес
+</button>
+
+<button onclick="changeWeight('heavyweight')">
+Тяжёлый вес
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Карьера</h2>
+
+<button onclick="findOpponent()">
+🔍 Найти соперника
+</button>
+
+<p id="opponentText">
+Соперник не найден
+</p>
+
+<button onclick="startPressConference()">
+🎤 Пресс-конференция
+</button>
+
+<button onclick="startFight()">
+🔥 Начать бой
+</button>
+
+</div>
+
+<div class="card" id="pressBox">
+
+<h2>Пресс-конференция</h2>
+
+<p id="pressQuestion">
+Журналисты ждут ответа...
+</p>
+
+<button onclick="pressAnswer('respect')">
+🤝 Уважительно
+</button>
+
+<button onclick="pressAnswer('trash')">
+😈 Трэшток
+</button>
+
+<button onclick="pressAnswer('confident')">
+🔥 Уверенно
+</button>
+
+</div>
+
+<div class="card" id="fightScreen">
+
+<h2 id="fightTitle">
+БОЙ
+</h2>
+
+<div class="bar">
+<div id="playerHP" class="fill"></div>
+</div>
+
+<div class="bar">
+<div id="enemyHP" class="fill"></div>
+</div>
+
+<div class="bar">
+<div id="energyBar" class="fill energyFill"></div>
+</div>
+
+<div class="arena">
+
+<div id="fighter1" class="fighter" style="left:40px;">
+<div class="body">
+<div id="shortsColor" class="shorts"></div>
+</div>
+</div>
+
+<div id="fighter2" class="fighter" style="right:40px;">
+<div class="body">
+<div class="shorts" style="background:blue"></div>
+</div>
+</div>
+
+<div class="floor"></div>
+
+</div>
+
+<button onclick="attack('punch')">👊</button>
+<button onclick="attack('kick')">🦵</button>
+<button onclick="attack('block')">🛡️</button>
+<button onclick="attack('takedown')">🤼</button>
+<button onclick="attack('submission')">🔒</button>
+<button onclick="attack('special')">🔥</button>
+
+<div id="escapeBox">
+<button onclick="tryEscape()">
+🆘 ВЫЙТИ ИЗ БОРЬБЫ
+</button>
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>ТОП-10</h2>
+
+<div id="top10"></div>
+
+</div>
+
+<div class="card">
+
+<h2>Новости</h2>
+
+<div id="log">
+Создай бойца.
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let player={
+name:"Боец",
+rating:50,
+money:1000,
+fans:0,
+wins:0,
+losses:0,
+streak:0,
+power:10,
+grappling:10,
+defense:10,
+energy:100,
+style:"balanced",
+weight:"lightweight",
+shorts:"red",
+belts:[],
+coach:"Нет",
+contract:"Local FC",
+age:22,
+ranking:15
+};
+
+let enemy=null;
+let fight=false;
+let blocking=false;
+let titleFight=false;
+
+let playerGrounded=false;
+let enemyGrounded=false;
+
+let playerHp=100;
+let enemyHp=100;
+
+const enemies=[
+"Рико Шторм",
+"Макс Орёл",
+"Титан Блэйз",
+"Хан Волк",
+"Рэй Торнадо",
+"Перейра Стоун",
+"Лео Блэйд",
+"Кейн Фрост",
+"Гром Стоун",
+"Озон Кинг"
+];
+
+function createPlayer(){
+
+player.name=
+document.getElementById("fighterName").value;
+
+player.style=
+document.getElementById("style").value;
+
+player.weight=
+document.getElementById("weight").value;
+
+player.shorts=
+document.getElementById("shorts").value;
+
+if(player.style==="striker"){
+player.power=15;
+player.grappling=8;
+}
+
+if(player.style==="wrestler"){
+player.power=10;
+player.grappling=16;
+}
+
+if(player.style==="balanced"){
+player.power=12;
+player.grappling=12;
+}
+
+document.getElementById("creator").style.display=
+"none";
+
+updateUI();
+
+}
+
+function updateUI(){
+
+document.getElementById("playerName").textContent=
+player.name;
+
+document.getElementById("rating").textContent=
+player.rating;
+
+document.getElementById("money").textContent=
+player.money;
+
+document.getElementById("fans").textContent=
+player.fans;
+
+document.getElementById("wins").textContent=
+player.wins;
+
+document.getElementById("losses").textContent=
+player.losses;
+
+document.getElementById("streak").textContent=
+player.streak;
+
+document.getElementById("power").textContent=
+player.power;
+
+document.getElementById("grappling").textContent=
+player.grappling;
+
+document.getElementById("defense").textContent=
+player.defense;
+
+document.getElementById("energy").textContent=
+player.energy;
+
+document.getElementById("age").textContent=
+player.age;
+
+document.getElementById("ranking").textContent=
+player.ranking;
+
+document.getElementById("status").innerHTML=
+player.belts.length>=2 ?
+"<span class='redText'>🏆🏆 Двойной чемпион</span>" :
+player.belts.length>=1 ?
+"<span class='gold'>🏆 Чемпион</span>" :
+"Претендент";
+
+document.getElementById("popularityBar").style.width=
+Math.min(player.fans,100)+"%";
+
+document.getElementById("top10").innerHTML=
+enemies.map((e,i)=>
+(i+1)+". "+e
+).join("<br>");
+
+saveGame();
+
+}
+
+function log(text){
+
+document.getElementById("log").innerHTML=
+text+"<br>"+
+document.getElementById("log").innerHTML;
+
+}
+
+function saveGame(){
+
+localStorage.setItem(
+"mmaUltimateSave",
+JSON.stringify(player)
+);
+
+}
+
+function loadGame(){
+
+const save=
+localStorage.getItem("mmaUltimateSave");
+
+if(save){
+
+player=JSON.parse(save);
+
+document.getElementById("creator").style.display=
+"none";
+
+updateUI();
+
+log("Сохранение загружено.");
+
+}
+
+}
+
+function chooseCoach(type){
+
+if(type==="boxing"){
+player.coach="Бокс";
+}
+
+if(type==="wrestling"){
+player.coach="Борьба";
+}
+
+if(type==="cardio"){
+player.coach="Кардио";
+}
+
+log("Новый тренер: "+player.coach);
+
+}
+
+function signContract(){
+
+const promotions=[
+"Local FC",
+"Ultimate Arena",
+"Global MMA",
+"World Combat"
+];
+
+player.contract=
+promotions[
+Math.floor(Math.random()*promotions.length)
+];
+
+log("Контракт подписан: "+player.contract);
+
+}
+
+function sponsorDeal(){
+
+if(player.fans<30){
+
+log("Недостаточно популярности.");
+
+return;
+
+}
+
+const money=
+1000+Math.floor(Math.random()*4000);
+
+player.money+=money;
+
+log("Новый спонсор! +"+money+"$");
+
+updateUI();
+
+}
+
+function ppvEvent(){
+
+const ppv=
+player.fans*50;
+
+player.money+=ppv;
+
+log("PPV принес "+ppv+"$");
+
+updateUI();
+
+}
+
+function recoverEnergy(){
+
+if(player.money<500){
+
+log("Не хватает денег.");
+
+return;
+
+}
+
+player.money-=500;
+
+player.energy=100;
+
+log("Энергия восстановлена.");
+
+updateUI();
+
+}
+
+function trainingCost(){
+
+return player.belts.length>0 ? 800 : 300;
+
+}
+
+function train(type){
+
+const cost=trainingCost();
+
+if(player.money<cost){
+
+log("Не хватает денег.");
+
+return;
+
+}
+
+if(player.energy<20){
+
+log("Не хватает энергии.");
+
+return;
+
+}
+
+player.money-=cost;
+
+player.energy-=20;
+
+if(type==="power"){
+player.power++;
+}
+
+if(type==="grappling"){
+player.grappling++;
+}
+
+if(type==="defense"){
+player.defense++;
+}
+
+if(player.coach==="Бокс"&&type==="power"){
+player.power++;
+}
+
+if(player.coach==="Борьба"&&type==="grappling"){
+player.grappling++;
+}
+
+if(player.coach==="Кардио"&&type==="defense"){
+player.defense++;
+}
+
+player.rating++;
+
+log("Тренировка завершена.");
+
+updateUI();
+
+}
+
+function changeWeight(weight){
+
+if(player.belts.length===0){
+
+log("Только чемпион может менять вес.");
+
+return;
+
+}
+
+player.weight=weight;
+
+log("Ты сменил весовую категорию.");
+
+}
+
+function generateEnemy(){
+
+const scale=
+Math.floor(player.rating/5);
+
+return{
+
+name:
+enemies[
+Math.floor(Math.random()*enemies.length)
+],
+
+power:10+scale+
+Math.floor(Math.random()*5),
+
+grappling:10+scale+
+Math.floor(Math.random()*5),
+
+defense:10+scale+
+Math.floor(Math.random()*5),
+
+hp:100+scale*4
+
+};
+
+}
+
+function findOpponent(){
+
+enemy=generateEnemy();
+
+titleFight=
+player.streak>=3&&player.fans>=30;
+
+document.getElementById("opponentText").innerHTML=
+(titleFight?"🏆 ТИТУЛЬНЫЙ БОЙ<br>":"")+
+enemy.name;
+
+}
+
+function startPressConference(){
+
+document.getElementById("pressBox").style.display=
+"block";
+
+const questions=[
+"Будет ли нокаут?",
+"Что скажешь о сопернике?",
+"Ты уверен в победе?"
+];
+
+document.getElementById("pressQuestion").textContent=
+questions[
+Math.floor(Math.random()*questions.length)
+];
+
+}
+
+function pressAnswer(type){
+
+document.getElementById("pressBox").style.display=
+"none";
+
+if(type==="respect"){
+player.fans+=5;
+}
+
+if(type==="trash"){
+player.fans+=15;
+}
+
+if(type==="confident"){
+player.fans+=10;
+}
+
+updateUI();
+
+}
+
+function startFight(){
+
+if(player.energy<15){
+
+log("Мало энергии.");
+
+return;
+
+}
+
+if(!enemy){
+findOpponent();
+}
+
+fight=true;
+
+playerGrounded=false;
+enemyGrounded=false;
+
+playerHp=100+player.defense*2;
+enemyHp=enemy.hp;
+
+document.getElementById("fightScreen").style.display=
+"block";
+
+document.getElementById("shortsColor").style.background=
+player.shorts;
+
+updateFightBars();
+
+}
+
+function attack(type){
+
+if(!fight)return;
+
+if(playerGrounded&&type!=="block"){
+
+log("Сначала выйди из борьбы!");
+
+return;
+
+}
+
+const fighter=
+document.getElementById("fighter1");
+
+let dmg=0;
+let cost=0;
+
+if(type==="punch"){
+
+fighter.classList.add("hitAnim");
+
+setTimeout(()=>{
+fighter.classList.remove("hitAnim");
+},160);
+
+dmg=player.power+Math.random()*8;
+cost=8;
+
+}
+
+if(type==="kick"){
+
+fighter.classList.add("kickAnim");
+
+setTimeout(()=>{
+fighter.classList.remove("kickAnim");
+},180);
+
+dmg=player.power+12;
+cost=15;
+
+}
+
+if(type==="takedown"){
+
+fighter.classList.add("takedownAnim");
+
+setTimeout(()=>{
+fighter.classList.remove("takedownAnim");
+},220);
+
+cost=20;
+
+const success=
+(Math.random()*100)+player.grappling>
+50+enemy.grappling;
+
+if(success){
+
+enemyGrounded=true;
+
+dmg=player.grappling+12;
+
+log("🤼 ТЕЙКДАУН!");
+
+}else{
+
+log("Соперник защитился.");
+
+}
+
+}
+
+if(type==="submission"){
+
+if(!enemyGrounded){
+
+log("Сначала сделай тейкдаун!");
+
+return;
+
+}
+
+fighter.classList.add("submissionAnim");
+
+setTimeout(()=>{
+fighter.classList.remove("submissionAnim");
+},250);
+
+cost=28;
+
+const success=
+(Math.random()*100)+player.grappling>
+55+enemy.grappling;
+
+if(success){
+
+dmg=enemyHp;
+
+log("🔒 САБМИШЕН!");
+
+}else{
+
+enemyGrounded=false;
+
+log("Соперник вышел.");
+
+}
+
+}
+
+if(type==="special"){
+
+fighter.classList.add("kickAnim");
+
+setTimeout(()=>{
+fighter.classList.remove("kickAnim");
+},220);
+
+dmg=player.power+28;
+cost=35;
+
+}
+
+if(type==="block"){
+
+blocking=true;
+
+setTimeout(()=>{
+blocking=false;
+},700);
+
+return;
+
+}
+
+player.energy-=cost;
+
+enemyHp-=Math.floor(dmg);
+
+if(enemyHp<0){
+enemyHp=0;
+}
+
+updateFightBars();
+
+if(enemyHp<=0){
+
+winFight();
+
+return;
+
+}
+
+enemyAttack();
+
+}
+
+function enemyAttack(){
+
+if(Math.random()<0.25&&!playerGrounded){
+
+const td=
+(Math.random()*100)+enemy.grappling>
+55+player.grappling;
+
+if(td){
+
+playerGrounded=true;
+
+document.getElementById("escapeBox").style.display=
+"block";
+
+log("🤼 Тебя перевели в партер!");
+
+groundDamage();
+
+return;
+
+}
+
+}
+
+let dmg=
+enemy.power+Math.random()*8;
+
+if(blocking){
+dmg=Math.floor(dmg/2);
+}
+
+playerHp-=Math.floor(dmg);
+
+if(playerHp<0){
+playerHp=0;
+}
+
+updateFightBars();
+
+if(playerHp<=0){
+
+loseFight();
+
+}
+
+}
+
+function tryEscape(){
+
+let chance=50;
+
+if(enemy.grappling>player.grappling){
+chance=30;
+}
+
+const roll=Math.random()*100;
+
+if(roll<chance){
+
+playerGrounded=false;
+
+document.getElementById("escapeBox").style.display=
+"none";
+
+log("✅ Ты вышел из борьбы!");
+
+}else{
+
+log("❌ Не получилось!");
+
+groundDamage();
+
+}
+
+}
+
+function groundDamage(){
+
+const dmg=
+enemy.grappling+
+Math.floor(Math.random()*12);
+
+playerHp-=dmg;
+
+if(playerHp<0){
+playerHp=0;
+}
+
+if(Math.random()<0.25){
+
+const sub=
+(Math.random()*100)+enemy.grappling>
+60+player.grappling;
+
+if(sub){
+
+playerHp=0;
+
+log("🔒 Тебя засабмитили!");
+
+loseFight();
+
+return;
+
+}
+
+}
+
+updateFightBars();
+
+if(playerHp<=0){
+
+loseFight();
+
+}
+
+}
+
+function updateFightBars(){
+
+document.getElementById("playerHP").style.width=
+(playerHp/(100+player.defense*2))*100+"%";
+
+document.getElementById("enemyHP").style.width=
+(enemyHp/enemy.hp)*100+"%";
+
+document.getElementById("energyBar").style.width=
+player.energy+"%";
+
+}
+
+function recoverFightStamina(){
+
+if(!fight)return;
+
+if(player.energy<100){
+
+player.energy+=
+playerGrounded ? 1 : 3;
+
+if(player.energy>100){
+player.energy=100;
+}
+
+updateFightBars();
+updateUI();
+
+}
+
+}
+
+setInterval(recoverFightStamina,1000);
+
+function winFight(){
+
+fight=false;
+
+player.wins++;
+player.streak++;
+
+const reward=
+titleFight ? 5000 : 1000;
+
+player.money+=reward;
+
+player.rating+=5;
+
+player.fans+=10;
+
+player.ranking=
+Math.max(1,player.ranking-1);
+
+if(titleFight&&
+!player.belts.includes(player.weight)){
+
+player.belts.push(player.weight);
+
+log("🏆 Ты стал чемпионом!");
+
+}
+
+if(player.wins%5===0){
+
+player.age++;
+
+if(player.age>=35){
+
+player.power=
+Math.max(10,player.power-1);
+
+player.defense=
+Math.max(10,player.defense-1);
+
+log("Возраст влияет на форму.");
+
+}
+
+}
+
+if(Math.random()<0.2){
+
+player.energy=
+Math.max(20,player.energy-40);
+
+log("🤕 Ты получил травму.");
+
+}
+
+document.getElementById("fightScreen").style.display=
+"none";
+
+enemy=null;
+
+updateUI();
+
+}
+
+function loseFight(){
+
+fight=false;
+
+player.losses++;
+
+player.streak=0;
+
+player.rating=
+Math.max(40,player.rating-5);
+
+player.fans=
+Math.max(0,player.fans-5);
+
+if(titleFight&&
+player.belts.includes(player.weight)){
+
+player.belts=
+player.belts.filter(
+b=>b!==player.weight
+);
+
+log("Ты потерял пояс.");
+
+}
+
+document.getElementById("fightScreen").style.display=
+"none";
+
+enemy=null;
+
+updateUI();
+
+}
+
+loadGame();
+
+</script>
+
+</body>
+</html>
