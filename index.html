@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#111111">
+  <link rel="manifest" href="manifest.json">
+  <title>Cage Fight 5 Mobile</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #101010;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      overflow-x: hidden;
+    }
+
+    .app {
+      max-width: 430px;
+      margin: auto;
+      padding: 15px;
+    }
+
+    h1 {
+      color: gold;
+      font-size: 26px;
+    }
+
+    select, button {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 10px;
+      border: none;
+      font-weight: bold;
+    }
+
+    button {
+      background: gold;
+      cursor: pointer;
+    }
+
+    .arena {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .fighter {
+      width: 48%;
+      background: #222;
+      border-radius: 18px;
+      padding: 10px;
+    }
+
+    .body {
+      width: 85px;
+      height: 135px;
+      margin: auto;
+      border-radius: 45px 45px 20px 20px;
+      background: tan;
+      position: relative;
+    }
+
+    .body::before {
+      content: "";
+      position: absolute;
+      top: 12px;
+      left: 23px;
+      width: 40px;
+      height: 40px;
+      background: #f1c27d;
+      border-radius: 50%;
+    }
+
+    .body::after {
+      content: "";
+      position: absolute;
+      bottom: 8px;
+      left: 18px;
+      width: 50px;
+      height: 30px;
+      border-radius: 8px;
+      background: red;
+    }
+
+    .red::after { background: red; }
+    .blue::after { background: royalblue; }
+    .black::after { background: black; }
+    .gold::after { background: gold; }
+
+    .wolf { border: 4px solid orange; }
+    .eagle { border: 4px solid green; }
+    .storm { border: 4px solid dodgerblue; }
+    .stone { border: 4px solid purple; }
+
+    .bar {
+      height: 14px;
+      background: #555;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 6px 0;
+    }
+
+    .hp {
+      height: 100%;
+      width: 100%;
+      background: limegreen;
+    }
+
+    .stamina {
+      height: 100%;
+      width: 100%;
+      background: deepskyblue;
+    }
+
+    .controls {
+      margin-top: 15px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .controls button {
+      font-size: 15px;
+      padding: 13px;
+    }
+
+    #log {
+      background: black;
+      border-radius: 12px;
+      padding: 10px;
+      height: 110px;
+      overflow-y: auto;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+
+    #result {
+      color: gold;
+      font-size: 22px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <h1>Cage Fight 5 Mobile</h1>
+
+    <div>
+      <select id="fighter1">
+        <option value="Rico Storm">Рико Шторм</option>
+        <option value="Max Eagle">Макс Орёл</option>
+        <option value="Khan Wolf">Хан Волк</option>
+        <option value="Alex Stone">Алекс Стоун</option>
+      </select>
+
+      <select id="fighter2">
+        <option value="Max Eagle">Макс Орёл</option>
+        <option value="Rico Storm">Рико Шторм</option>
+        <option value="Khan Wolf">Хан Волк</option>
+        <option value="Alex Stone">Алекс Стоун</option>
+      </select>
+    </div>
+
+    <div>
+      <select id="shorts1">
+        <option value="red">Красные</option>
+        <option value="blue">Синие</option>
+        <option value="black">Чёрные</option>
+        <option value="gold">Золотые</option>
+      </select>
+
+      <select id="shorts2">
+        <option value="blue">Синие</option>
+        <option value="red">Красные</option>
+        <option value="black">Чёрные</option>
+        <option value="gold">Золотые</option>
+      </select>
+    </div>
+
+    <button onclick="startFight()">Начать бой</button>
+
+    <div class="arena">
+      <div class="fighter">
+        <div id="avatar1" class="body red"></div>
+        <h3 id="name1">Боец 1</h3>
+        <div class="bar"><div id="hp1" class="hp"></div></div>
+        <div class="bar"><div id="st1" class="stamina"></div></div>
+        <p>HP: <span id="hpText1">100</span></p>
+        <p>ST: <span id="stText1">100</span></p>
+      </div>
+
+      <div class="fighter">
+        <div id="avatar2" class="body blue"></div>
+        <h3 id="name2">Боец 2</h3>
+        <div class="bar"><div id="hp2" class="hp"></div></div>
+        <div class="bar"><div id="st2" class="stamina"></div></div>
+        <p>HP: <span id="hpText2">100</span></p>
+        <p>ST: <span id="stText2">100</span></p>
+      </div>
+    </div>
+
+    <h2 id="result"></h2>
+
+    <div class="controls">
+      <button onclick="attack(1, 'punch')">P1 Удар</button>
+      <button onclick="attack(2, 'punch')">P2 Удар</button>
+      <button onclick="attack(1, 'kick')">P1 Нога</button>
+      <button onclick="attack(2, 'kick')">P2 Нога</button>
+      <button onclick="attack(1, 'block')">P1 Блок</button>
+      <button onclick="attack(2, 'block')">P2 Блок</button>
+      <button onclick="attack(1, 'special')">P1 Супер</button>
+      <button onclick="attack(2, 'special')">P2 Супер</button>
+    </div>
+
+    <div id="log"></div>
+  </div>
+
+  <script>
+    const data = {
+      "Rico Storm": { ru: "Рико Шторм", cls: "storm", hp: 100, st: 115, punch: 13, kick: 16, special: 32 },
+      "Max Eagle": { ru: "Макс Орёл", cls: "eagle", hp: 110, st: 105, punch: 14, kick: 15, special: 30 },
+      "Khan Wolf": { ru: "Хан Волк", cls: "wolf", hp: 125, st: 95, punch: 15, kick: 14, special: 34 },
+      "Alex Stone": { ru: "Алекс Стоун", cls: "stone", hp: 95, st: 100, punch: 18, kick: 22, special: 40 }
+    };
+
+    let p1, p2, over = false;
+
+    function makePlayer(name) {
+      const f = data[name];
+      return {
+        name: f.ru,
+        cls: f.cls,
+        maxHp: f.hp,
+        hp: f.hp,
+        maxSt: f.st,
+        st: f.st,
+        punch: f.punch,
+        kick: f.kick,
+        special: f.special,
+        block: false
+      };
+    }
+
+    function startFight() {
+      p1 = makePlayer(document.getElementById("fighter1").value);
+      p2 = makePlayer(document.getElementById("fighter2").value);
+      over = false;
+      document.getElementById("result").textContent = "";
+      document.getElementById("log").innerHTML = "Бой начался!<br>";
+      update();
+    }
+
+    function attack(who, type) {
+      if (over) return;
+      if (!p1 || !p2) startFight();
+
+      let a = who === 1 ? p1 : p2;
+      let d = who === 1 ? p2 : p1;
+
+      if (type === "block") {
+        a.block = true;
+        a.st = Math.min(a.maxSt, a.st + 12);
+        log(a.name + " поставил блок");
+        update();
+        return;
+      }
+
+      let cost = type === "punch" ? 10 : type === "kick" ? 18 : 35;
+
+      if (a.st < cost) {
+        log(a.name + " устал!");
+        a.st += 10;
+        update();
+        return;
+      }
+
+      a.st -= cost;
+
+      let damage = a[type] + Math.floor(Math.random() * 8);
+
+      if (d.block) {
+        damage = Math.floor(damage / 2);
+        d.block = false;
+      }
+
+      if (Math.random() < 0.12) damage *= 2;
+
+      d.hp -= damage;
+      if (d.hp < 0) d.hp = 0;
+
+      log(a.name + " нанёс " + damage + " урона");
+
+      if (d.hp <= 0) {
+        over = true;
+        document.getElementById("result").textContent = a.name + " победил нокаутом!";
+      }
+
+      update();
+    }
+
+    function update() {
+      document.getElementById("name1").textContent = p1.name;
+      document.getElementById("name2").textContent = p2.name;
+
+      setBar("hp1", "hpText1", p1.hp, p1.maxHp);
+      setBar("st1", "stText1", p1.st, p1.maxSt);
+      setBar("hp2", "hpText2", p2.hp, p2.maxHp);
+      setBar("st2", "stText2", p2.st, p2.maxSt);
+
+      document.getElementById("avatar1").className =
+        "body " + p1.cls + " " + document.getElementById("shorts1").value;
+
+      document.getElementById("avatar2").className =
+        "body " + p2.cls + " " + document.getElementById("shorts2").value;
+    }
+
+    function setBar(id, text, value, max) {
+      document.getElementById(id).style.width = (value / max * 100) + "%";
+      document.getElementById(text).textContent = Math.round(value);
+    }
+
+    function log(t) {
+      document.getElementById("log").innerHTML = t + "<br>" + document.getElementById("log").innerHTML;
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
+    }
+
+    startFight();
+  </script>
+</body>
+</html>
