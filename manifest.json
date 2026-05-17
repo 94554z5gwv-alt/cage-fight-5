@@ -1,0 +1,16 @@
+{
+  "name": "Cage Fight 5 Mobile",
+  "short_name": "Cage Fight 5",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#101010",
+  "theme_color": "#111111",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
