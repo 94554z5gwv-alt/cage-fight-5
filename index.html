@@ -1,337 +1,314 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="theme-color" content="#111111">
-  <link rel="manifest" href="manifest.json">
-  <title>Cage Fight 5 Mobile</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Cage Fight Arena</title>
 
-  <style>
-    body {
-      margin: 0;
-      background: #101010;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      overflow-x: hidden;
-    }
+<style>
+body{
+margin:0;
+background:#111;
+font-family:Arial;
+overflow:hidden;
+color:white;
+}
 
-    .app {
-      max-width: 430px;
-      margin: auto;
-      padding: 15px;
-    }
+#arena{
+position:relative;
+width:100vw;
+height:100vh;
+background:linear-gradient(#222,#111);
+overflow:hidden;
+}
 
-    h1 {
-      color: gold;
-      font-size: 26px;
-    }
+.floor{
+position:absolute;
+bottom:0;
+width:100%;
+height:120px;
+background:#222;
+border-top:5px solid #444;
+}
 
-    select, button {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 10px;
-      border: none;
-      font-weight: bold;
-    }
+.fighter{
+position:absolute;
+bottom:120px;
+width:90px;
+height:180px;
+transition:0.12s;
+}
 
-    button {
-      background: gold;
-      cursor: pointer;
-    }
+.body{
+position:absolute;
+bottom:0;
+width:90px;
+height:140px;
+border-radius:40px 40px 20px 20px;
+background:#d2b48c;
+}
 
-    .arena {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 15px;
-    }
+.head{
+position:absolute;
+top:-45px;
+left:20px;
+width:50px;
+height:50px;
+border-radius:50%;
+background:#f1c27d;
+}
 
-    .fighter {
-      width: 48%;
-      background: #222;
-      border-radius: 18px;
-      padding: 10px;
-    }
+.shorts{
+position:absolute;
+bottom:10px;
+left:15px;
+width:60px;
+height:35px;
+border-radius:10px;
+}
 
-    .body {
-      width: 85px;
-      height: 135px;
-      margin: auto;
-      border-radius: 45px 45px 20px 20px;
-      background: tan;
-      position: relative;
-    }
+.red{background:red;}
+.blue{background:royalblue;}
 
-    .body::before {
-      content: "";
-      position: absolute;
-      top: 12px;
-      left: 23px;
-      width: 40px;
-      height: 40px;
-      background: #f1c27d;
-      border-radius: 50%;
-    }
+.hpbar{
+position:absolute;
+top:20px;
+width:40%;
+height:20px;
+background:#444;
+border-radius:10px;
+overflow:hidden;
+}
 
-    .body::after {
-      content: "";
-      position: absolute;
-      bottom: 8px;
-      left: 18px;
-      width: 50px;
-      height: 30px;
-      border-radius: 8px;
-      background: red;
-    }
+.hpfill{
+height:100%;
+background:limegreen;
+width:100%;
+}
 
-    .red::after { background: red; }
-    .blue::after { background: royalblue; }
-    .black::after { background: black; }
-    .gold::after { background: gold; }
+#hp1{
+left:20px;
+}
 
-    .wolf { border: 4px solid orange; }
-    .eagle { border: 4px solid green; }
-    .storm { border: 4px solid dodgerblue; }
-    .stone { border: 4px solid purple; }
+#hp2{
+right:20px;
+}
 
-    .bar {
-      height: 14px;
-      background: #555;
-      border-radius: 8px;
-      overflow: hidden;
-      margin: 6px 0;
-    }
+.controls{
+position:absolute;
+bottom:10px;
+width:100%;
+display:flex;
+justify-content:space-around;
+flex-wrap:wrap;
+gap:10px;
+}
 
-    .hp {
-      height: 100%;
-      width: 100%;
-      background: limegreen;
-    }
+button{
+padding:14px;
+border:none;
+border-radius:12px;
+font-size:18px;
+font-weight:bold;
+background:gold;
+}
 
-    .stamina {
-      height: 100%;
-      width: 100%;
-      background: deepskyblue;
-    }
+#msg{
+position:absolute;
+top:55px;
+width:100%;
+text-align:center;
+font-size:28px;
+font-weight:bold;
+color:gold;
+}
 
-    .controls {
-      margin-top: 15px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
+.hit{
+transform:translateX(25px);
+}
 
-    .controls button {
-      font-size: 15px;
-      padding: 13px;
-    }
+.kick{
+transform:translateY(-20px) rotate(10deg);
+}
 
-    #log {
-      background: black;
-      border-radius: 12px;
-      padding: 10px;
-      height: 110px;
-      overflow-y: auto;
-      margin-top: 15px;
-      font-size: 13px;
-    }
+.block{
+filter:brightness(1.5);
+}
 
-    #result {
-      color: gold;
-      font-size: 22px;
-    }
-  </style>
+</style>
 </head>
 
 <body>
-  <div class="app">
-    <h1>Cage Fight 5 Mobile</h1>
 
-    <div>
-      <select id="fighter1">
-        <option value="Rico Storm">Рико Шторм</option>
-        <option value="Max Eagle">Макс Орёл</option>
-        <option value="Khan Wolf">Хан Волк</option>
-        <option value="Alex Stone">Алекс Стоун</option>
-      </select>
+<div id="arena">
 
-      <select id="fighter2">
-        <option value="Max Eagle">Макс Орёл</option>
-        <option value="Rico Storm">Рико Шторм</option>
-        <option value="Khan Wolf">Хан Волк</option>
-        <option value="Alex Stone">Алекс Стоун</option>
-      </select>
-    </div>
+<div id="msg"></div>
 
-    <div>
-      <select id="shorts1">
-        <option value="red">Красные</option>
-        <option value="blue">Синие</option>
-        <option value="black">Чёрные</option>
-        <option value="gold">Золотые</option>
-      </select>
+<div id="hp1" class="hpbar">
+<div id="hpfill1" class="hpfill"></div>
+</div>
 
-      <select id="shorts2">
-        <option value="blue">Синие</option>
-        <option value="red">Красные</option>
-        <option value="black">Чёрные</option>
-        <option value="gold">Золотые</option>
-      </select>
-    </div>
+<div id="hp2" class="hpbar">
+<div id="hpfill2" class="hpfill"></div>
+</div>
 
-    <button onclick="startFight()">Начать бой</button>
+<div id="fighter1" class="fighter" style="left:40px;">
+<div class="body">
+<div class="head"></div>
+<div class="shorts red"></div>
+</div>
+</div>
 
-    <div class="arena">
-      <div class="fighter">
-        <div id="avatar1" class="body red"></div>
-        <h3 id="name1">Боец 1</h3>
-        <div class="bar"><div id="hp1" class="hp"></div></div>
-        <div class="bar"><div id="st1" class="stamina"></div></div>
-        <p>HP: <span id="hpText1">100</span></p>
-        <p>ST: <span id="stText1">100</span></p>
-      </div>
+<div id="fighter2" class="fighter" style="right:40px;">
+<div class="body">
+<div class="head"></div>
+<div class="shorts blue"></div>
+</div>
+</div>
 
-      <div class="fighter">
-        <div id="avatar2" class="body blue"></div>
-        <h3 id="name2">Боец 2</h3>
-        <div class="bar"><div id="hp2" class="hp"></div></div>
-        <div class="bar"><div id="st2" class="stamina"></div></div>
-        <p>HP: <span id="hpText2">100</span></p>
-        <p>ST: <span id="stText2">100</span></p>
-      </div>
-    </div>
+<div class="floor"></div>
 
-    <h2 id="result"></h2>
+<div class="controls">
 
-    <div class="controls">
-      <button onclick="attack(1, 'punch')">P1 Удар</button>
-      <button onclick="attack(2, 'punch')">P2 Удар</button>
-      <button onclick="attack(1, 'kick')">P1 Нога</button>
-      <button onclick="attack(2, 'kick')">P2 Нога</button>
-      <button onclick="attack(1, 'block')">P1 Блок</button>
-      <button onclick="attack(2, 'block')">P2 Блок</button>
-      <button onclick="attack(1, 'special')">P1 Супер</button>
-      <button onclick="attack(2, 'special')">P2 Супер</button>
-    </div>
+<button onclick="moveLeft()">⬅️</button>
+<button onclick="moveRight()">➡️</button>
+<button onclick="punch()">👊</button>
+<button onclick="kick()">🦵</button>
+<button onclick="block()">🛡️</button>
 
-    <div id="log"></div>
-  </div>
+</div>
 
-  <script>
-    const data = {
-      "Rico Storm": { ru: "Рико Шторм", cls: "storm", hp: 100, st: 115, punch: 13, kick: 16, special: 32 },
-      "Max Eagle": { ru: "Макс Орёл", cls: "eagle", hp: 110, st: 105, punch: 14, kick: 15, special: 30 },
-      "Khan Wolf": { ru: "Хан Волк", cls: "wolf", hp: 125, st: 95, punch: 15, kick: 14, special: 34 },
-      "Alex Stone": { ru: "Алекс Стоун", cls: "stone", hp: 95, st: 100, punch: 18, kick: 22, special: 40 }
-    };
+</div>
 
-    let p1, p2, over = false;
+<script>
 
-    function makePlayer(name) {
-      const f = data[name];
-      return {
-        name: f.ru,
-        cls: f.cls,
-        maxHp: f.hp,
-        hp: f.hp,
-        maxSt: f.st,
-        st: f.st,
-        punch: f.punch,
-        kick: f.kick,
-        special: f.special,
-        block: false
-      };
-    }
+let playerX = 40;
+let enemyX = window.innerWidth - 130;
 
-    function startFight() {
-      p1 = makePlayer(document.getElementById("fighter1").value);
-      p2 = makePlayer(document.getElementById("fighter2").value);
-      over = false;
-      document.getElementById("result").textContent = "";
-      document.getElementById("log").innerHTML = "Бой начался!<br>";
-      update();
-    }
+let hp1 = 100;
+let hp2 = 100;
 
-    function attack(who, type) {
-      if (over) return;
-      if (!p1 || !p2) startFight();
+const fighter1 = document.getElementById("fighter1");
+const fighter2 = document.getElementById("fighter2");
 
-      let a = who === 1 ? p1 : p2;
-      let d = who === 1 ? p2 : p1;
+function updateBars(){
+document.getElementById("hpfill1").style.width = hp1 + "%";
+document.getElementById("hpfill2").style.width = hp2 + "%";
+}
 
-      if (type === "block") {
-        a.block = true;
-        a.st = Math.min(a.maxSt, a.st + 12);
-        log(a.name + " поставил блок");
-        update();
-        return;
-      }
+function moveLeft(){
+playerX -= 20;
+if(playerX < 0) playerX = 0;
+fighter1.style.left = playerX + "px";
+}
 
-      let cost = type === "punch" ? 10 : type === "kick" ? 18 : 35;
+function moveRight(){
+playerX += 20;
+if(playerX > window.innerWidth - 100){
+playerX = window.innerWidth - 100;
+}
+fighter1.style.left = playerX + "px";
+}
 
-      if (a.st < cost) {
-        log(a.name + " устал!");
-        a.st += 10;
-        update();
-        return;
-      }
+function distance(){
+return Math.abs(playerX - enemyX);
+}
 
-      a.st -= cost;
+function punch(){
 
-      let damage = a[type] + Math.floor(Math.random() * 8);
+fighter1.classList.add("hit");
 
-      if (d.block) {
-        damage = Math.floor(damage / 2);
-        d.block = false;
-      }
+setTimeout(()=>{
+fighter1.classList.remove("hit");
+},120);
 
-      if (Math.random() < 0.12) damage *= 2;
+if(distance() < 130){
+let dmg = Math.floor(Math.random()*12)+8;
+hp2 -= dmg;
+if(hp2 < 0) hp2 = 0;
+updateBars();
 
-      d.hp -= damage;
-      if (d.hp < 0) d.hp = 0;
+if(hp2 <= 0){
+document.getElementById("msg").innerText = "ПОБЕДА!";
+}
+}
+}
 
-      log(a.name + " нанёс " + damage + " урона");
+function kick(){
 
-      if (d.hp <= 0) {
-        over = true;
-        document.getElementById("result").textContent = a.name + " победил нокаутом!";
-      }
+fighter1.classList.add("kick");
 
-      update();
-    }
+setTimeout(()=>{
+fighter1.classList.remove("kick");
+},150);
 
-    function update() {
-      document.getElementById("name1").textContent = p1.name;
-      document.getElementById("name2").textContent = p2.name;
+if(distance() < 150){
+let dmg = Math.floor(Math.random()*18)+10;
+hp2 -= dmg;
+if(hp2 < 0) hp2 = 0;
+updateBars();
 
-      setBar("hp1", "hpText1", p1.hp, p1.maxHp);
-      setBar("st1", "stText1", p1.st, p1.maxSt);
-      setBar("hp2", "hpText2", p2.hp, p2.maxHp);
-      setBar("st2", "stText2", p2.st, p2.maxSt);
+if(hp2 <= 0){
+document.getElementById("msg").innerText = "НОКАУТ!";
+}
+}
+}
 
-      document.getElementById("avatar1").className =
-        "body " + p1.cls + " " + document.getElementById("shorts1").value;
+function block(){
 
-      document.getElementById("avatar2").className =
-        "body " + p2.cls + " " + document.getElementById("shorts2").value;
-    }
+fighter1.classList.add("block");
 
-    function setBar(id, text, value, max) {
-      document.getElementById(id).style.width = (value / max * 100) + "%";
-      document.getElementById(text).textContent = Math.round(value);
-    }
+setTimeout(()=>{
+fighter1.classList.remove("block");
+},600);
 
-    function log(t) {
-      document.getElementById("log").innerHTML = t + "<br>" + document.getElementById("log").innerHTML;
-    }
+}
 
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js");
-    }
+function enemyAI(){
 
-    startFight();
-  </script>
+if(hp2 <= 0 || hp1 <= 0) return;
+
+if(enemyX - playerX > 120){
+enemyX -= 10;
+fighter2.style.right = (window.innerWidth - enemyX - 90) + "px";
+}else{
+
+if(Math.random() < 0.5){
+
+fighter2.classList.add("hit");
+
+setTimeout(()=>{
+fighter2.classList.remove("hit");
+},120);
+
+hp1 -= Math.floor(Math.random()*10)+5;
+
+}else{
+
+fighter2.classList.add("kick");
+
+setTimeout(()=>{
+fighter2.classList.remove("kick");
+},150);
+
+hp1 -= Math.floor(Math.random()*15)+8;
+}
+
+if(hp1 < 0) hp1 = 0;
+
+updateBars();
+
+if(hp1 <= 0){
+document.getElementById("msg").innerText = "ТЫ ПРОИГРАЛ";
+}
+}
+}
+
+updateBars();
+
+setInterval(enemyAI,1000);
+
+</script>
+
 </body>
 </html>
