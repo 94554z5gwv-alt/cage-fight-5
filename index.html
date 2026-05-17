@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+
+<title>Cage Fight Mobile</title>
+
+<style>
+
+body{
+margin:0;
+background:#111;
+font-family:Arial;
+overflow:hidden;
+color:white;
+}
+
+#menu{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+background:#1b1b1b;
+padding:10px;
+z-index:5;
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:10px;
+box-sizing:border-box;
+}
+
+select,button{
+padding:10px;
+border:none;
+border-radius:10px;
+font-weight:bold;
+}
+
+button{
+background:gold;
+}
+
+#arena{
+position:relative;
+width:100vw;
+height:100vh;
+overflow:hidden;
+background:linear-gradient(#222,#111);
+}
+
+.floor{
+position:absolute;
+bottom:0;
+width:100%;
+height:120px;
+background:#222;
+border-top:5px solid #444;
+}
+
+.fighter{
+position:absolute;
+bottom:120px;
+width:95px;
+height:190px;
+transition:0.12s;
+}
+
+.body{
+position:absolute;
+bottom:0;
+width:95px;
+height:145px;
+border-radius:40px 40px 20px 20px;
+}
+
+.head{
+position:absolute;
+top:-48px;
+left:22px;
+width:50px;
+height:50px;
+border-radius:50%;
+background:#f1c27d;
+}
+
+.shorts{
+position:absolute;
+bottom:10px;
+left:15px;
+width:65px;
+height:35px;
+border-radius:10px;
+}
+
+.red{background:red;}
+.blue{background:royalblue;}
+.black{background:black;}
+.gold{background:gold;}
+
+.conor .body{
+background:#d2b48c;
+border:4px solid orange;
+}
+
+.max .body{
+background:#c9a67a;
+border:4px solid dodgerblue;
+}
+
+.khabib .body{
+background:#d8b48a;
+border:4px solid green;
+}
+
+.alex .body{
+background:#b88b5a;
+border:4px solid purple;
+}
+
+.hpbar{
+position:absolute;
+top:90px;
+width:40%;
+height:20px;
+background:#444;
+border-radius:10px;
+overflow:hidden;
+}
+
+#hp1{
+left:20px;
+}
+
+#hp2{
+right:20px;
+}
+
+.fill{
+height:100%;
+width:100%;
+background:limegreen;
+}
+
+#msg{
+position:absolute;
+top:120px;
+width:100%;
+text-align:center;
+font-size:30px;
+font-weight:bold;
+color:gold;
+z-index:3;
+}
+
+.controls{
+position:absolute;
+bottom:10px;
+width:100%;
+display:flex;
+justify-content:center;
+flex-wrap:wrap;
+gap:10px;
+z-index:4;
+}
+
+.controls button{
+font-size:18px;
+padding:14px;
+}
+
+.hit{
+transform:translateX(25px);
+}
+
+.kick{
+transform:translateY(-20px) rotate(10deg);
+}
+
+.block{
+filter:brightness(1.5);
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="menu">
+
+<select id="fighterSelect">
+<option value="conor">Конор МакДональдс</option>
+<option value="max">Макс Воробей</option>
+<option value="khabib">Хабиб Орёл</option>
+<option value="alex">Перейра Стоун</option>
+</select>
+
+<select id="shortsSelect">
+<option value="red">Красные шорты</option>
+<option value="blue">Синие шорты</option>
+<option value="black">Чёрные шорты</option>
+<option value="gold">Золотые шорты</option>
+</select>
+
+<button onclick="applyCharacter()">Выбрать</button>
+
+</div>
+
+<div id="arena">
+
+<div id="msg"></div>
+
+<div id="hp1" class="hpbar">
+<div id="fill1" class="fill"></div>
+</div>
+
+<div id="hp2" class="hpbar">
+<div id="fill2" class="fill"></div>
+</div>
+
+<div id="fighter1" class="fighter conor" style="left:40px;">
+<div class="body">
+<div class="head"></div>
+<div id="shorts1" class="shorts red"></div>
+</div>
+</div>
+
+<div id="fighter2" class="fighter khabib" style="right:40px;">
+<div class="body">
+<div class="head"></div>
+<div class="shorts blue"></div>
+</div>
+</div>
+
+<div class="floor"></div>
+
+<div class="controls">
+
+<button onclick="moveLeft()">⬅️</button>
+<button onclick="moveRight()">➡️</button>
+<button onclick="punch()">👊</button>
+<button onclick="kickAttack()">🦵</button>
+<button onclick="blockMove()">🛡️</button>
+
+</div>
+
+</div>
+
+<script>
+
+let hp1=100;
+let hp2=100;
+
+let playerX=40;
+let enemyX=window.innerWidth-140;
+
+const fighter1=document.getElementById("fighter1");
+const fighter2=document.getElementById("fighter2");
+
+const fighterStats={
+conor:{punch:12,kick:18},
+max:{punch:10,kick:15},
+khabib:{punch:14,kick:14},
+alex:{punch:18,kick:24}
+};
+
+let current="conor";
+
+function applyCharacter(){
+
+current=document.getElementById("fighterSelect").value;
+const shorts=document.getElementById("shortsSelect").value;
+
+fighter1.className="fighter "+current;
+
+document.getElementById("shorts1").className="shorts "+shorts;
+
+}
+
+function updateBars(){
+
+document.getElementById("fill1").style.width=hp1+"%";
+document.getElementById("fill2").style.width=hp2+"%";
+
+}
+
+function moveLeft(){
+
+playerX-=20;
+
+if(playerX<0)playerX=0;
+
+fighter1.style.left=playerX+"px";
+
+}
+
+function moveRight(){
+
+playerX+=20;
+
+if(playerX>window.innerWidth-120){
+playerX=window.innerWidth-120;
+}
+
+fighter1.style.left=playerX+"px";
+
+}
+
+function distance(){
+
+return Math.abs(playerX-enemyX);
+
+}
+
+function punch(){
+
+fighter1.classList.add("hit");
+
+setTimeout(()=>{
+fighter1.classList.remove("hit");
+},120);
+
+if(distance()<130){
+
+let dmg=fighterStats[current].punch+
+Math.floor(Math.random()*8);
+
+hp2-=dmg;
+
+if(hp2<0)hp2=0;
+
+updateBars();
+
+if(hp2<=0){
+
+document.getElementById("msg").innerText="ПОБЕДА";
+
+}
+
+}
+
+}
+
+function kickAttack(){
+
+fighter1.classList.add("kick");
+
+setTimeout(()=>{
+fighter1.classList.remove("kick");
+},150);
+
+if(distance()<150){
+
+let dmg=fighterStats[current].kick+
+Math.floor(Math.random()*10);
+
+hp2-=dmg;
+
+if(hp2<0)hp2=0;
+
+updateBars();
+
+if(hp2<=0){
+
+document.getElementById("msg").innerText="НОКАУТ";
+
+}
+
+}
+
+}
+
+function blockMove(){
+
+fighter1.classList.add("block");
+
+setTimeout(()=>{
+fighter1.classList.remove("block");
+},500);
+
+}
+
+function enemyAI(){
+
+if(hp1<=0||hp2<=0)return;
+
+if(enemyX-playerX>120){
+
+enemyX-=10;
+
+fighter2.style.right=
+(window.innerWidth-enemyX-95)+"px";
+
+}else{
+
+if(Math.random()<0.5){
+
+fighter2.classList.add("hit");
+
+setTimeout(()=>{
+fighter2.classList.remove("hit");
+},120);
+
+hp1-=Math.floor(Math.random()*10)+6;
+
+}else{
+
+fighter2.classList.add("kick");
+
+setTimeout(()=>{
+fighter2.classList.remove("kick");
+},150);
+
+hp1-=Math.floor(Math.random()*16)+8;
+
+}
+
+if(hp1<0)hp1=0;
+
+updateBars();
+
+if(hp1<=0){
+
+document.getElementById("msg").innerText="ТЫ ПРОИГРАЛ";
+
+}
+
+}
+
+}
+
+updateBars();
+
+setInterval(enemyAI,1000);
+
+</script>
+
+</body>
+</html>
