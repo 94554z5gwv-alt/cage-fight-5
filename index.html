@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>MMA Mobile Fight</title>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+<style>
+body{margin:0;background:#000;overflow:hidden;font-family:Arial}
+#game{width:100vw;height:100vh}
+#controls{
+position:fixed;bottom:10px;left:0;width:100%;
+display:grid;grid-template-columns:repeat(4,1fr);
+gap:8px;padding:8px;box-sizing:border-box;z-index:10
+}
+button{
+font-size:18px;font-weight:bold;border:none;border-radius:14px;
+padding:16px;background:gold;color:#111
+}
+</style>
+</head>
+<body>
+
+<div id="game"></div>
+
+<div id="controls">
+<button ontouchstart="leftDown=true" ontouchend="leftDown=false">⬅️</button>
+<button ontouchstart="rightDown=true" ontouchend="rightDown=false">➡️</button>
+<button onclick="doAction('punch')">👊</button>
+<button onclick="doAction('kick')">🦵</button>
+<button onclick="doAction('takedown')">🤼</button>
+<button onclick="doAction('submission')">🔒</button>
+<button onclick="doAction('block')">🛡️</button>
+<button onclick="restartFight()">🔄</button>
+</div>
+
+<script>
+let sceneRef;
+let player, enemy;
+let playerHP=100, enemyHP=100, stamina=100;
+let canAttack=true, grounded=false;
+let leftDown=false, rightDown=false;
+let hpText, enemyText, staminaText, infoText;
+
+const config={
+type:Phaser.AUTO,
+parent:"game",
+width:window.innerWidth,
+height:window.innerHeight,
+backgroundColor:"#101010",
+physics:{default:"arcade",arcade:{gravity:{y:900},debug:false}},
+scene:{preload,create,update}
+};
+
+new Phaser.Game(config);
+
+function preload(){}
+
+function create(){
+sceneRef=this;
+const w=this.scale.width,h=this.scale.height;
+
+this.add.rectangle(w/2,h-60,w,120,0x333333);
+this.add.rectangle(w/2,h-120,w,6,0x777777);
+
+this.add.text(w/2,25,"MMA MOBILE FIGHT",{fontSize:"24px",color:"#ffd700",fontStyle:"bold"}).setOrigin(.5);
+
+player=createFighter(this,120,h-220,0xff3333);
+enemy=createFighter(this,w-120,h-220,0x3377ff);
+
+this.physics.add.existing(player.c);
+this.physics.add.existing(enemy.c);
+
+player.c.body.setCollideWorldBounds(true);
+enemy.c.body.setCollideWorldBounds(true);
+
+const ground=this.add.rectangle(w/2,h-60,w,120,0x333333);
+this.physics.add.existing(ground,true);
+this.physics.add.collider(player.c,ground);
+this.physics.add.collider(enemy.c,ground);
+
+hpText=this.add.text(15,65,"HP:100",{fontSize:"18px",color:"#00ff00"});
+enemyText=this.add.text(w-120,65,"HP:100",{fontSize:"18px",color:"#00ff00"});
+staminaText=this.add.text(15,90,"ST:100",{fontSize:"18px",color:"#00ccff"});
+
+infoText=this.add.text(w/2,120,"Кнопки снизу: ходьба, удары, тейкдаун, сабмишен, блок",{
+fontSize:"14px",color:"#fff",align:"center",wordWrap:{width:w-30}
+}).setOrigin(.5);
+
+this.time.addEvent({
+delay:1000,
+loop:true,
+callback:()=>{
+if(stamina<100){
+stamina+=grounded?2:6;
+if(stamina>100)stamina=100;
+}
+enemyAI(this);
+updateUI();
+}
+});
+}
+
+function update(){
+if(playerHP<=0||enemyHP<=0)return;
+
+player.c.body.setVelocityX(0);
+
+if(leftDown){
+player.c.body.setVelocityX(-220);
+player.c.scaleX=-1;
+}
+
+if(rightDown){
+player.c.body.setVelocityX(220);
+player.c.scaleX=1;
+}
+}
+
+function createFighter(scene,x,y,shortsColor){
+const c=scene.add.container(x,y);
+
+const leg1=scene.add.rectangle(-18,80,18,60,0xc28b5c);
+const leg2=scene.add.rectangle(18,80,18,60,0xc28b5c);
+const body=scene.add.rectangle(0,0,60,100,0xc28b5c);
+const head=scene.add.circle(0,-70,25,0xf1c27d);
+const shorts=scene.add.rectangle(0,35,52,28,shortsColor);
+const arm1=scene.add.rectangle(-42,-10,16,65,0xc28b5c);
+const arm2=scene.add.rectangle(42,-10,16,65,0xc28b5c);
+
+c.add([leg1,leg2,body,head,shorts,arm1,arm2]);
+
+return{c,body,head,shorts,arm1,arm2,leg1,leg2,blocking:false};
+}
+
+function doAction(type){
+if(!sceneRef)return;
+if(type==="block") block(sceneRef);
+else attack(sceneRef,type);
+}
+
+function dist(){
+return Math.abs(player.c.x-enemy.c.x);
+}
+
+function attack(scene,type){
+if(!canAttack)return;
+if(playerHP<=0||enemyHP<=0)return;
+
+if(stamina<=5){
+infoText.setText("Ты устал!");
+return;
+}
+
+canAttack=false;
+
+let damage=0,cost=0;
+
+if(type==="punch"){
+cost=8;
+damage=10+Phaser.Math.Between(0,8);
+scene.tweens.add({targets:player.arm2,x:85,duration:90,yoyo:true});
+infoText.setText("Удар рукой!");
+}
+
+if(type==="kick"){
+cost=15;
+damage=18+Phaser.Math.Between(0,10);
+scene.tweens.add({targets:player.leg2,x:75,y:40,angle:40,duration:120,yoyo:true});
+infoText.setText("Удар ногой!");
+}
+
+if(type==="takedown"){
+cost=22;
+scene.tweens.add({targets:player.c,x:player.c.x+50,angle:-15,duration:160,yoyo:true});
+
+if(dist()<150&&Math.random()<0.65){
+grounded=true;
+damage=16;
+infoText.setText("Тейкдаун прошёл! Теперь можно сабмишен.");
+}else{
+infoText.setText("Соперник защитился от тейкдауна!");
+}
+}
+
+if(type==="submission"){
+cost=28;
+
+if(!grounded){
+infoText.setText("Сначала сделай тейкдаун!");
+canAttack=true;
+return;
+}
+
+scene.tweens.add({targets:player.c,scaleX:.8,scaleY:.8,angle:-25,duration:180,yoyo:true});
+
+if(Math.random()<0.5){
+damage=enemyHP;
+infoText.setText("Сабмишен! Победа!");
+}else{
+grounded=false;
+infoText.setText("Соперник вышел из сабмишена!");
+}
+}
+
+stamina-=cost;
+if(stamina<0)stamina=0;
+
+if(dist()<160){
+enemyHP-=damage;
+hitEffect(scene,enemy.c);
+}
+
+if(enemyHP<=0){
+enemyHP=0;
+infoText.setText("ПОБЕДА!");
+}
+
+updateUI();
+
+scene.time.delayedCall(350,()=>canAttack=true);
+}
+
+function block(scene){
+player.blocking=true;
+infoText.setText("Блок!");
+
+scene.tweens.add({targets:player.c,alpha:.6,duration:100,yoyo:true,repeat:2});
+
+scene.time.delayedCall(700,()=>player.blocking=false);
+}
+
+function enemyAI(scene){
+if(playerHP<=0||enemyHP<=0)return;
+
+if(enemy.c.x>player.c.x+115){
+enemy.c.x-=25;
+enemy.c.scaleX=-1;
+return;
+}
+
+if(Math.random()<.25){
+infoText.setText("Соперник пытается тейкдаун!");
+
+if(Math.random()<.5){
+playerHP-=18;
+grounded=false;
+hitEffect(scene,player.c);
+infoText.setText("Тебя перевели в партер!");
+}else{
+infoText.setText("Ты защитился от тейкдауна!");
+}
+
+updateUI();
+return;
+}
+
+let damage=Phaser.Math.Between(8,18);
+
+if(player.blocking)damage=Math.floor(damage/2);
+
+playerHP-=damage;
+hitEffect(scene,player.c);
+
+if(playerHP<=0){
+playerHP=0;
+infoText.setText("ТЫ ПРОИГРАЛ!");
+}
+
+updateUI();
+}
+
+function hitEffect(scene,target){
+scene.tweens.add({
+targets:target,
+x:target.x+Phaser.Math.Between(-12,12),
+duration:50,
+yoyo:true,
+repeat:2
+});
+}
+
+function updateUI(){
+hpText.setText("HP:"+Math.floor(playerHP));
+enemyText.setText("HP:"+Math.floor(enemyHP));
+staminaText.setText("ST:"+Math.floor(stamina));
+}
+
+function restartFight(){
+playerHP=100;
+enemyHP=100;
+stamina=100;
+grounded=false;
+canAttack=true;
+
+if(player&&enemy){
+player.c.x=120;
+enemy.c.x=window.innerWidth-120;
+player.c.angle=0;
+enemy.c.angle=0;
+player.c.scaleX=1;
+player.c.scaleY=1;
+enemy.c.scaleX=1;
+enemy.c.scaleY=1;
+}
+
+if(infoText)infoText.setText("Новый бой!");
+updateUI();
+}
+</script>
+</body>
+</html>
